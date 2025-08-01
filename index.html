@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cloud File Uploader with Expiry Link</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #0f0f0f;
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .uploader-container {
+      background-color: #1c1c1c;
+      border: 1px solid #3affff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #00ffff44;
+      width: 350px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #00ffff;
+      margin-bottom: 20px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      background-color: #00ffff;
+      color: #000;
+      padding: 12px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    label:hover {
+      background-color: #00cccc;
+    }
+
+    .upload-status, .expiry-info, .download-link {
+      margin-top: 20px;
+    }
+
+    .download-link a {
+      color: #00ffff;
+      text-shadow: 0 0 8px #00ffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .download-link a:hover {
+      color: #00e6e6;
+      text-shadow: 0 0 15px #00ffff;
+    }
+
+    .expired {
+      color: #ff4f4f;
+      font-weight: bold;
+    }
+
+    .expiry-info strong {
+      color: #ffcc00;
+    }
+  </style>
+</head>
+<body>
+  <div class="uploader-container">
+    <h2>Cloud File Uploader</h2>
+    <label for="fileInput">Choose File</label>
+    <input type="file" id="fileInput" />
+    <div class="upload-status"></div>
+    <div class="download-link"></div>
+    <div class="expiry-info"></div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const statusDiv = document.querySelector('.upload-status');
+    const linkDiv = document.querySelector('.download-link');
+    const expiryDiv = document.querySelector('.expiry-info');
+
+    let expiryTimer;
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      statusDiv.innerHTML = `<p>Uploading "<span style="color:#00ffff">${file.name}</span>"...</p>`;
+      linkDiv.innerHTML = '';
+      expiryDiv.innerHTML = '';
+
+      setTimeout(() => {
+        const fakeLink = `https://cloudfiles.example.com/download/${Date.now()}-${file.name}`;
+        statusDiv.innerHTML = `<p>✅ Upload successful!</p>`;
+        linkDiv.innerHTML = `<p>🔗 <a href="${fakeLink}" target="_blank" id="downloadLink">${fakeLink}</a></p>`;
+        
+        let secondsLeft = 60;
+        expiryDiv.innerHTML = `⏳ Link expires in <strong>${secondsLeft}</strong> seconds`;
+
+        clearInterval(expiryTimer);
+        expiryTimer = setInterval(() => {
+          secondsLeft--;
+          if (secondsLeft > 0) {
+            expiryDiv.innerHTML = `⏳ Link expires in <strong>${secondsLeft}</strong> seconds`;
+          } else {
+            clearInterval(expiryTimer);
+            expiryDiv.innerHTML = `<span class="expired">❌ Link expired</span>`;
+            const link = document.getElementById('downloadLink');
+            if (link) {
+              link.removeAttribute('href');
+              link.style.pointerEvents = 'none';
+              link.style.color = '#ff4f4f';
+              link.style.textShadow = 'none';
+            }
+          }
+        }, 1000);
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
